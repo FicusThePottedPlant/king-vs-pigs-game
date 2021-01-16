@@ -7,8 +7,10 @@ class Mouse(pygame.sprite.Sprite):
 
     def __init__(self, *group):
         super().__init__(*group)
-        pygame.transform.smoothscale(Mouse.image, (10, 5))
         self.image = Mouse.image
+        self.image = pygame.transform.smoothscale(Mouse.image, (32, 32))
+        print(self.image.get_height())
+
         self.rect = self.image.get_rect()
 
     def update(self, ev):

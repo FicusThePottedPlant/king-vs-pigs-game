@@ -167,7 +167,7 @@ class LevelChooser(Menu):
 class Game:
     # TODO integrate a level and game here
     def __init__(self):
-
+        pass
 
 
     def render(self):

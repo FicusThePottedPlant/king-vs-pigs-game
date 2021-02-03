@@ -9,8 +9,6 @@ class Mouse(pygame.sprite.Sprite):
         super().__init__(*group)
         self.image = Mouse.image
         self.image = pygame.transform.smoothscale(Mouse.image, (32, 32))
-        print(self.image.get_height())
-
         self.rect = self.image.get_rect()
 
     def update(self, ev):

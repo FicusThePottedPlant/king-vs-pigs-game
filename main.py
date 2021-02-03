@@ -1,15 +1,15 @@
+import csv
 import ctypes
 import random
 import string
 import webbrowser
-
 import pygame
-
+import sqlite3
 from mouse import Mouse
 
 user32 = ctypes.windll.user32  # get user monitor size
 screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
-screensize = 900, 600
+screensize = 1100, 700
 size = width, height = screensize
 
 screen = pygame.display.set_mode(screensize)
@@ -28,13 +28,13 @@ class Button:
             :param is_clickable: set not clickable type of button
         """
         self.font = pygame.font.Font('data/fonts/8-BIT WONDER.TTF', font_size)
-
         self.button_text = button_text
         self.is_clickable = is_clickable
         self.has_border = has_border
         self.is_locked = is_locked
-        self.text = self.font.render(button_text, True, 'grey' if is_locked else 'white')
 
+        self.color = 'grey' if is_locked else 'white'
+        self.text = self.font.render(button_text, True, self.color)
         self.text_x, self.text_y = x, y
         self.text_w, self.text_h = self.text.get_width(), self.text.get_height()
         # print(self.text_x, self.text_y,
@@ -44,8 +44,8 @@ class Button:
 
     def render(self):
         if self.has_border:
-            pygame.draw.rect(screen, 'white', (self.center_x - 30, self.center_y - 30,
-                                               60, 60), width=5, border_radius=10)
+            pygame.draw.rect(screen, self.color, (self.center_x - 30, self.center_y - 30,
+                                                  60, 60), width=5, border_radius=10)
         screen.blit(self.text, (self.text_x, self.text_y))
 
     def on_cursor(self, mouse_pos):
@@ -56,17 +56,18 @@ class Button:
         if self.text_x <= mouse_pos[0] <= self.text_x + self.text_w \
                 and self.text_y <= mouse_pos[1] <= self.text_y + self.text_h and self.is_clickable:
             if not self.has_border:
-                pygame.draw.rect(screen, 'white', (self.text_x - 10, self.text_y - 8,
-                                                   self.text_w + 15, self.text_h + 20), width=5, border_radius=10)
+                pygame.draw.rect(screen, self.color, (self.text_x - 10, self.text_y - 8,
+                                                      self.text_w + 15, self.text_h + 20), width=5, border_radius=10)
             else:
-                pygame.draw.polygon(screen, 'white',
-                                    ((self.center_x, self.center_y + 40), (self.center_x + 25, self.center_y + 50),
-                                     (self.center_x - 25, self.center_y + 50)))
+                if not self.is_locked:
+                    pygame.draw.polygon(screen, self.color,
+                                        ((self.center_x, self.center_y + 40), (self.center_x + 25, self.center_y + 50),
+                                         (self.center_x - 25, self.center_y + 50)))
 
     def update(self, pygame_event):
         mouse_pos = pygame.mouse.get_pos()
         if self.text_x <= mouse_pos[0] <= self.text_x + self.text_w and \
-                self.text_y <= mouse_pos[1] <= self.text_y + self.text_h and self.is_clickable:
+                self.text_y <= mouse_pos[1] <= self.text_y + self.text_h and self.is_clickable and not self.is_locked:
             if pygame_event.type == pygame.MOUSEBUTTONDOWN:
                 windows_behaviour = {'Credits': (False, False, True, False, False),
                                      'Return': (True, False, False, False, False),
@@ -88,7 +89,9 @@ class Button:
                     display_credits, is_playing, on_pause = windows_behaviour[self.button_text]
 
     def unlock_button(self):
-        pass
+        self.is_locked = False
+        self.color = 'white'
+        self.text = self.font.render(self.button_text, True, self.color)
 
 
 class Menu:
@@ -157,8 +160,11 @@ class LevelChooser(Menu):
                         Button('Choose level', width // 2 - 240, height // 2 - 20 * 10, 40, False)]
 
         a = width // 2 - (1 + LEVELS // 2) * 100
-        for i in range(1, LEVELS + 1):
-            self.buttons.append(Button(str(i), (a := a + 100), height // 2 - 100, 40, True, True))
+        self.con = sqlite3.connect("data/config/config.db")
+        self.cur = self.con.cursor()
+        result = self.cur.execute("SELECT * FROM config").fetchall()
+        for i in result:
+            self.buttons.append(Button(str(i[0]), (a := a + 100), height // 2 - 100, 40, True, True, i[1]))
 
     def render(self):
         self.matrix = menu.matrix
@@ -186,6 +192,13 @@ class Game:
             global is_playing, on_pause
             is_playing = False
             on_pause = True
+        if pygame_event.type == pygame.MOUSEBUTTONDOWN:
+            self.unlock_level(2)
+
+    def unlock_level(self, n):
+        level_menu.cur.execute(f"UPDATE config SET status = 0 WHERE level = {n}")
+        level_menu.buttons[n + 1].unlock_button()
+        # level_menu.con.commit()
 
 
 class Pause(Menu):

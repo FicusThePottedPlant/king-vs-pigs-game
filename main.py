@@ -9,26 +9,32 @@ from mouse import Mouse
 
 user32 = ctypes.windll.user32  # get user monitor size
 screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
-# screensize = 900, 600
+screensize = 900, 600
 size = width, height = screensize
 
 screen = pygame.display.set_mode(screensize)
 
-display_menu, display_levels, display_credits, is_playing, on_pause = True, False, False, False, False  # current displaying window
+# current displaying window
+display_menu, display_levels, display_credits, is_playing, on_pause = True, False, False, False, False
+
 LEVELS = 9
 
 
 class Button:
-    def __init__(self, button_text: str, x: int, y: int, font_size: int, is_clickable=True, has_border=False):
+    def __init__(self, button_text: str, x: int, y: int, font_size: int, is_clickable=True, has_border=False,
+                 is_locked=False):
         """
             Create new button with button_text in (x,y) by up left corner with size font_size
             :param is_clickable: set not clickable type of button
         """
         self.font = pygame.font.Font('data/fonts/8-BIT WONDER.TTF', font_size)
+
         self.button_text = button_text
         self.is_clickable = is_clickable
         self.has_border = has_border
-        self.text = self.font.render(button_text, True, 'white')
+        self.is_locked = is_locked
+        self.text = self.font.render(button_text, True, 'grey' if is_locked else 'white')
+
         self.text_x, self.text_y = x, y
         self.text_w, self.text_h = self.text.get_width(), self.text.get_height()
         # print(self.text_x, self.text_y,
@@ -57,13 +63,15 @@ class Button:
                                     ((self.center_x, self.center_y + 40), (self.center_x + 25, self.center_y + 50),
                                      (self.center_x - 25, self.center_y + 50)))
 
-    def update(self, event):
+    def update(self, pygame_event):
         mouse_pos = pygame.mouse.get_pos()
         if self.text_x <= mouse_pos[0] <= self.text_x + self.text_w and \
                 self.text_y <= mouse_pos[1] <= self.text_y + self.text_h and self.is_clickable:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                windows_behaviour = {'Credits': (False, False, True), 'Return': (True, False, False),
-                                     'Start game': (False, True, False), 'Return to main menu': (True, False, False)}
+            if pygame_event.type == pygame.MOUSEBUTTONDOWN:
+                windows_behaviour = {'Credits': (False, False, True, False, False),
+                                     'Return': (True, False, False, False, False),
+                                     'Start game': (False, True, False, False, False),
+                                     'Return to main menu': (True, False, False, False, False)}
 
                 global display_menu, display_credits, display_levels, running, is_playing, on_pause
                 if not windows_behaviour.get(self.button_text) and display_levels:
@@ -74,13 +82,13 @@ class Button:
                 elif self.button_text == 'Tagir Asadullin':
                     webbrowser.open_new('t.me/ficusthepottedplant')
                 elif self.button_text == 'Continue':
-                    is_playing = True
-                    on_pause = False
+                    is_playing, on_pause = True, False
                 else:
-                    try:
-                        display_menu, display_levels, display_credits = windows_behaviour[self.button_text]
-                    except KeyError:
-                        pass
+                    display_menu, display_levels, \
+                    display_credits, is_playing, on_pause = windows_behaviour[self.button_text]
+
+    def unlock_button(self):
+        pass
 
 
 class Menu:
@@ -103,9 +111,9 @@ class Menu:
         text_x, text_y = random.randint(0, width), y
         self.matrix.append((text, [text_x, text_y]))
 
-    def update(self, event):
+    def update(self, pygame_event):
         for i in self.buttons:
-            i.update(event)
+            i.update(pygame_event)
 
     def render(self):
 
@@ -169,13 +177,12 @@ class Game:
     def __init__(self):
         pass
 
-
     def render(self):
         pygame.draw.rect(screen, 'red', (50, 50,
                                          width - 100, height - 100), width=5, border_radius=10)
 
-    def update(self, event):
-        if event.type == pygame.KEYDOWN and pygame.key.get_pressed()[pygame.K_ESCAPE]:
+    def update(self, pygame_event):
+        if pygame_event.type == pygame.KEYDOWN and pygame.key.get_pressed()[pygame.K_ESCAPE]:
             global is_playing, on_pause
             is_playing = False
             on_pause = True
@@ -183,6 +190,7 @@ class Game:
 
 class Pause(Menu):
     def __init__(self):
+        super().__init__()
         self.font = pygame.font.Font('data/fonts/8-BIT WONDER.TTF', 6)
         self.buttons = [Button('Continue', width // 2 - 75, height // 2 - 30, 20),
                         Button('Return to main menu', width // 2 - 180, height // 2 + 30, 20)]
@@ -197,40 +205,31 @@ class Pause(Menu):
     def do_button_behaviour(self, pos):
         super(Pause, self).do_button_behaviour(pygame.mouse.get_pos())
 
-    def update(self, event):
-        if event.type == pygame.KEYDOWN and pygame.key.get_pressed()[pygame.K_ESCAPE]:
+    def update(self, pygame_event):
+        if pygame_event.type == pygame.KEYDOWN and pygame.key.get_pressed()[pygame.K_ESCAPE]:
             global is_playing, on_pause
             is_playing = True
             on_pause = False
 
         for i in self.buttons:
-            i.update(event)
+            i.update(pygame_event)
 
 
 def all_window_render():
-    if display_menu:
-        menu.render()
-    elif display_credits:
-        titres.render()
-    elif display_levels:
-        level_menu.render()
-    elif is_playing:
-        game.render()
-    elif on_pause:
-        pause.render()
+    data = [(display_menu, menu), (display_credits, titres),
+            (display_levels, level_menu), (is_playing, game), (on_pause, pause)]
+
+    for i, k in data:
+        if i:
+            k.render()
 
 
-def all_window_update():
-    if display_menu:
-        menu.update(event)
-    elif display_credits:
-        titres.update(event)
-    elif display_levels:
-        level_menu.update(event)
-    elif is_playing:
-        game.update(event)
-    elif on_pause:
-        pause.update(event)
+def all_window_update(pygame_event):
+    data = [(display_menu, menu), (display_credits, titres),
+            (display_levels, level_menu), (is_playing, game), (on_pause, pause)]
+    for i, k in data:
+        if i:
+            k.update(pygame_event)
 
 
 if __name__ == '__main__':
@@ -255,12 +254,11 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            all_window_update()
+            all_window_update(event)
+            all_sprites.update(event)
 
         all_window_render()
         all_sprites.draw(screen)
-        all_sprites.update(event)
 
         pygame.display.flip()
-
         clock.tick(fps)

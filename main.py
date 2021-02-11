@@ -1,15 +1,16 @@
-import csv
 import ctypes
 import random
+import sqlite3
 import string
 import webbrowser
+
 import pygame
-import sqlite3
+
 from mouse import Mouse
 
 user32 = ctypes.windll.user32  # get user monitor size
 screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
-screensize = 1100, 700
+screensize = 1100, 770
 size = width, height = screensize
 
 screen = pygame.display.set_mode(screensize)
@@ -17,7 +18,7 @@ screen = pygame.display.set_mode(screensize)
 # current displaying window
 display_menu, display_levels, display_credits, is_playing, on_pause = True, False, False, False, False
 
-LEVELS = 9
+LEVELS = 10
 
 
 class Button:
@@ -37,8 +38,6 @@ class Button:
         self.text = self.font.render(button_text, True, self.color)
         self.text_x, self.text_y = x, y
         self.text_w, self.text_h = self.text.get_width(), self.text.get_height()
-        # print(self.text_x, self.text_y,
-        #       self.text_w, self.text_h)
         self.rect = self.text.get_rect()
         self.center_x, self.center_y = (2 * self.text_x + self.text_w) / 2, (2 * self.text_y + self.text_h) / 2
 
@@ -157,13 +156,14 @@ class LevelChooser(Menu):
     def __init__(self):
         super().__init__()
         self.buttons = [Button('Return', width // 2 - 60, height // 2 + 10 + 30 * 9, 20),
-                        Button('Choose level', width // 2 - 240, height // 2 - 20 * 10, 40, False)]
-
-        a = width // 2 - (1 + LEVELS // 2) * 100
+                        Button('Choose level', width // 2 - 200, height // 2 - 20 * 10, 40, False)]
+        a = width // 2 - (1 + LEVELS // 2) * 86
         self.con = sqlite3.connect("data/config/config.db")
         self.cur = self.con.cursor()
         result = self.cur.execute("SELECT * FROM config").fetchall()
         for i in result:
+            if i[0] > LEVELS:
+                break
             self.buttons.append(Button(str(i[0]), (a := a + 100), height // 2 - 100, 40, True, True, i[1]))
 
     def render(self):
@@ -213,10 +213,7 @@ class Pause(Menu):
                                            width - 200, height - 200), width=5, border_radius=10)
         for i in self.buttons:
             i.render()
-        self.do_button_behaviour(pygame.mouse.get_pos())
-
-    def do_button_behaviour(self, pos):
-        super(Pause, self).do_button_behaviour(pygame.mouse.get_pos())
+        super().do_button_behaviour(pygame.mouse.get_pos())
 
     def update(self, pygame_event):
         if pygame_event.type == pygame.KEYDOWN and pygame.key.get_pressed()[pygame.K_ESCAPE]:

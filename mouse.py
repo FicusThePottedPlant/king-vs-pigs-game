@@ -3,6 +3,7 @@ import load
 
 
 class Mouse(pygame.sprite.Sprite):
+    """set mouse custom style"""
     image = load.load_image("arrow.png")
 
     def __init__(self, *group):

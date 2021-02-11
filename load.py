@@ -4,6 +4,7 @@ import pygame
 
 
 def load_image(name, colorkey=None):
+    """load image macros"""
     fullname = os.path.join('data/sprites', name)
     # если файл не существует, то выходим
     if not os.path.isfile(fullname):

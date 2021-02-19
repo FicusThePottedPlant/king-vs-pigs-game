@@ -80,17 +80,22 @@ class Button:
 
                 global display_menu, display_credits, display_levels, running, is_playing, on_pause
                 if not windows_behaviour.get(self.button_text) and display_levels:
+                    mouse.display = False
                     display_menu, display_credits, display_levels = False, False, False
                     is_playing = True
+
                 elif self.button_text == 'Exit':  # in pause and main menu
                     running = False
+                    mouse.display = True
                 elif self.button_text == 'Tagir Asadullin':  # in credits
                     webbrowser.open_new('t.me/ficusthepottedplant')
                 elif self.button_text == 'Continue':  # in pause
                     is_playing, on_pause = True, False
+                    mouse.display = False
                 else:
                     display_menu, display_levels, \
                     display_credits, is_playing, on_pause = windows_behaviour[self.button_text]
+                    mouse.display = True
 
     def unlock_button(self):
         """if the button locked, than unlock button by request """
@@ -101,6 +106,7 @@ class Button:
 
 class Menu:
     """main menu window"""
+
     def __init__(self):
         self.font = pygame.font.Font('data/fonts/8-BIT WONDER.TTF', 6)
         self.buttons = [Button('Start game', width // 2 - 200, height // 2 - 20, 40),
@@ -148,6 +154,7 @@ class Menu:
 
 class Credits(Menu):
     """credits window"""
+
     def __init__(self):
         super().__init__()
         self.buttons = [Button('Made by', width // 2 - 140, height // 2 - 20, 40, False),
@@ -190,7 +197,7 @@ class LevelChooser(Menu):
         self.do_button_behaviour(pygame.mouse.get_pos())
 
 
-class Game:
+class Game(object):
     # TODO integrate a level and game here
     """game main menu"""
 
@@ -208,6 +215,7 @@ class Game:
             global is_playing, on_pause
             is_playing = False
             on_pause = True
+            mouse.display = True
         if pygame_event.type == pygame.MOUSEBUTTONDOWN:
             self.unlock_level(2)
 
@@ -241,6 +249,7 @@ class Pause(Menu):
             global is_playing, on_pause
             is_playing = True
             on_pause = False
+            mouse.display = False
         for i in self.buttons:
             i.update(pygame_event)
 
@@ -276,7 +285,6 @@ if __name__ == '__main__':
     level_menu = LevelChooser()
     game = Game()
     pause = Pause()
-
     pygame.mouse.set_visible(False)
     mouse = Mouse(all_sprites)
     while running:

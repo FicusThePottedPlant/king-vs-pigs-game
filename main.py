@@ -10,7 +10,7 @@ from mouse import Mouse
 
 user32 = ctypes.windll.user32  # get user monitor size
 screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
-screensize = 1100, 770  # constant for testing
+# screensize = 1100, 770  # constant for testing
 size = width, height = screensize
 
 screen = pygame.display.set_mode(screensize)
@@ -114,7 +114,7 @@ class Menu:
                         Button('Exit', width // 2 - 35, height // 2 + 10 + 30 * 3, 20)]
 
         self.matrix = []
-        # generate matrix effect
+        # generating Matrix effect
         for i in range(0, height, 3):
             for j in range(20):
                 self.falling_down(i)
@@ -198,7 +198,7 @@ class LevelChooser(Menu):
 
 
 class Game(object):
-    # TODO integrate a level and game here
+    # TODO integrate a level and game here (add inherit class with game window)
     """game main menu"""
 
     def __init__(self):
@@ -221,9 +221,10 @@ class Game(object):
 
     def unlock_level(self, n):
         """unlock level by request"""
+        # TODO redo it as csv
         level_menu.cur.execute(f"UPDATE config SET status = 0 WHERE level = {n}")
         level_menu.buttons[n + 1].unlock_button()
-        # level_menu.con.commit()
+        # level_menu.con.commit() i'm not saving this to test
 
 
 class Pause(Menu):
@@ -237,6 +238,10 @@ class Pause(Menu):
 
     def render(self):
         """what to do on game cycle"""
+        self.matrix = menu.matrix
+        super().render()
+        pygame.draw.rect(screen, 'black', (100, 100,
+                                           width - 200, height - 200), border_radius=10)
         pygame.draw.rect(screen, 'white', (100, 100,
                                            width - 200, height - 200), width=5, border_radius=10)
         for i in self.buttons:
@@ -244,7 +249,7 @@ class Pause(Menu):
         super().do_button_behaviour(pygame.mouse.get_pos())
 
     def update(self, pygame_event):
-        """handle pygame event"""
+        """handle pygame events"""
         if pygame_event.type == pygame.KEYDOWN and pygame.key.get_pressed()[pygame.K_ESCAPE]:
             global is_playing, on_pause
             is_playing = True
@@ -292,6 +297,7 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
             all_window_update(event)
             all_sprites.update(event)
 

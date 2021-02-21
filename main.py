@@ -191,8 +191,6 @@ class Game:
                 is_playing = False
                 on_pause = True
 
-
-
 class Pause(Menu):
     def __init__(self):
         super().__init__()
@@ -267,22 +265,23 @@ if __name__ == '__main__':
                 running = False
             """ Just testing mechanics """
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    left = True
-                elif event.key == pygame.K_RIGHT:
-                    right = True
-                elif event.key == pygame.K_UP:
-                    up = True
                 if is_playing:
+                    if event.key == pygame.K_LEFT:
+                        left = True
+                    elif event.key == pygame.K_RIGHT:
+                        right = True
+                    elif event.key == pygame.K_UP:
+                        up = True
                     game.update(None,None,None, event, False)
                     continue
             if event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT:
-                    left = False
-                elif event.key == pygame.K_RIGHT:
-                    right = False
-                elif event.key == pygame.K_UP:
-                    up = False
+                if is_playing:
+                    if event.key == pygame.K_LEFT:
+                        left = False
+                    elif event.key == pygame.K_RIGHT:
+                        right = False
+                    elif event.key == pygame.K_UP:
+                        up = False
 
             all_window_update()
             all_sprites.update(event)

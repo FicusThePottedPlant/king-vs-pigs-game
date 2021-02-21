@@ -1,6 +1,7 @@
 import pygame
 import os
 import ctypes
+
 user32 = ctypes.windll.user32  # get user monitor size
 screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
 # screensize = 900, 600
@@ -12,8 +13,8 @@ COLOR_CHARACTER = 'black'
 
 WIDTH_CHARACTER = 15
 HEIGHT_CHARACTER = 20
-JUMP = 8.5
-GRAVITY = 0.3
+JUMP = 8
+GRAVITY = 0.5
 pack = os.path.dirname(__file__)
 image_folder = os.path.join(pack, 'Sprites')
 
@@ -32,8 +33,9 @@ class Char(pygame.sprite.Sprite):
         self.image = pygame.image.load(f'{image_folder}/03-Pig/Fall (34x28).png').convert()
         self.r = self.image.get_rect()
         self.rect = pygame.Rect(pos[0], pos[1], self.r.width, self.r.height)
+        self.ax = 0
 
-    def update(self, left, right, up,plat):
+    def update(self, left, right, up, plat):
         if left:
             self.xspeed = -SPEED
         elif right:

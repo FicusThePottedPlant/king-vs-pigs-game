@@ -1,6 +1,7 @@
 import pygame
 import os
 import ctypes
+import imagetools
 
 user32 = ctypes.windll.user32  # get user monitor size
 screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
@@ -8,18 +9,16 @@ screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
 size = width, height = screensize
 MAIN_WIDTH = width
 MAIN_HEIGHT = height
-SPEED = 7
+SPEED = 10
 COLOR_CHARACTER = 'black'
 
-WIDTH_CHARACTER = 15
-HEIGHT_CHARACTER = 20
-JUMP = 8
-GRAVITY = 0.5
+JUMP = 16
+GRAVITY = 1
 pack = os.path.dirname(__file__)
 image_folder = os.path.join(pack, 'Sprites')
 
 
-class Char(pygame.sprite.Sprite):
+class Hero(pygame.sprite.Sprite):
     def __init__(self, pos):
         pygame.sprite.Sprite.__init__(self)
         self.l = False
@@ -28,12 +27,12 @@ class Char(pygame.sprite.Sprite):
         self.x_start = pos[0]
         self.y_start = pos[1]
         self.stay_ground = False
-        self.image = pygame.Surface((WIDTH_CHARACTER, HEIGHT_CHARACTER))
-        self.image.fill(pygame.Color(COLOR_CHARACTER))
+        w, h = imagetools.del_transparent(f'{image_folder}/03-Pig/Fall (34x28).png')
         self.image = pygame.image.load(f'{image_folder}/03-Pig/Fall (34x28).png').convert()
-        self.r = self.image.get_rect()
-        self.rect = pygame.Rect(pos[0], pos[1], self.r.width, self.r.height)
-        self.ax = 0
+        self.image = pygame.transform.scale(self.image, (w * 2, h * 2))
+        self.mask = pygame.mask.from_surface(self.image)
+        r = self.image.get_rect()
+        self.rect = pygame.Rect(pos[0], pos[1], r.width, r.height)
 
     def update(self, left, right, up, plat):
         if left:
@@ -42,6 +41,7 @@ class Char(pygame.sprite.Sprite):
             self.xspeed = SPEED
         else:
             self.xspeed = 0
+
         if up:
             if self.stay_ground:
                 self.yspeed = -JUMP

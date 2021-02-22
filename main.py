@@ -14,6 +14,8 @@ LEVELS = 10
 def inc_number(v):
     global current_window
     current_window += v
+    if v == -4:
+        game.player.rect.x = 1000000
 
 
 buttons_behaviour = {'Credits': lambda x: inc_number(1), 'Return': lambda x: inc_number(-2),
@@ -108,6 +110,7 @@ class Menu:
                 self.falling_down(i)
 
     def falling_down(self, y=-6):
+        return
         """make a matrix main theme effect
         :param y: y ords of the screen
         """
@@ -188,26 +191,28 @@ class GameWindow:
     def __init__(self, which_level):
         global left, right, up
         self.which_level = which_level
-        self.player = Char((width * 0.5, height * 0.5))
+        self.player = Hero((164, 1200))
         main_sprite_group.add(self.player)
         self.level = Level(which_level)
         self.level.create_playable_map()
         self.left, self.right, self.up = False, False, False
 
     def render(self):
+        screen.fill('#1d212d')
         if pygame.key.get_pressed()[pygame.K_LEFT]:
             self.left = True
         if pygame.key.get_pressed()[pygame.K_RIGHT]:
             self.right = True
         if pygame.key.get_pressed()[pygame.K_z]:
             self.up = True
-        self.player.update(self.left, self.right, self.up, platforms)
         self.level.render(self.player)
+        self.player.update(self.left, self.right, self.up, platforms)
 
     def update(self, pygame_event):
         if event.type == pygame.KEYDOWN and pygame.key.get_pressed()[pygame.K_ESCAPE]:
             global current_window
             current_window = 4
+            screen.fill('#1d212d')
         self.left, self.right, self.up = False, False, False
 
 
@@ -235,9 +240,11 @@ class Pause(Menu):
     def update(self, pygame_event):
         """handle pygame events"""
         if pygame_event.type == pygame.KEYDOWN and pygame.key.get_pressed()[pygame.K_ESCAPE]:
-            global current_window
+            global current_window, game
             current_window = 3
             mouse.display = False
+            screen.fill('#1d212d')
+
         for i in self.buttons:
             i.update(pygame_event)
 
@@ -257,7 +264,7 @@ if __name__ == '__main__':
     game = GameWindow(3)
     data = {0: menu, 1: titres, 2: level_menu, 3: game, 4: pause}
     while running:
-        screen.fill((0, 0, 0))
+        screen.fill('#1d212d')
         mouse.display = False if current_window == 3 else True
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

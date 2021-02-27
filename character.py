@@ -27,11 +27,13 @@ class Hero(pygame.sprite.Sprite):
         self.x_start = x
         self.y_start = y
         self.stay_ground = False
-        self.image = pygame.image.load(f'{image_folder}/03-Pig/Fall (34x28).png').convert()
+
+        self.image = pygame.image.load(f'{image_folder}/03-Pig/Fall (34x28).png').convert_alpha()
         self.image = pygame.transform.scale(self.image, (self.image.get_width() * 2, self.image.get_height() * 2))
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
 
-    def update(self, left, right, up, plat):
+    def update(self, left, right, up, plat, spike):
         if left:
             self.xspeed = -SPEED
         elif right:
@@ -46,11 +48,15 @@ class Hero(pygame.sprite.Sprite):
             self.yspeed += GRAVITY
         self.stay_ground = False
         self.rect.y += self.yspeed
-        self.collision(0, self.yspeed, plat)
+        self.collision(0, self.yspeed, plat, spike)
         self.rect.x += self.xspeed
-        self.collision(self.xspeed, 0, plat)
+        self.collision(self.xspeed, 0, plat, spike)
 
-    def collision(self, xspeed, yspeed, plat):
+    def collision(self, xspeed, yspeed, plat, spike):
+        for s in spike:
+            if pygame.sprite.collide_mask(self, s):
+                self.rect.x = self.x_start
+                self.rect.y = self.y_start
         for p in plat:
             if pygame.sprite.collide_rect(self, p):
                 if xspeed > 0:

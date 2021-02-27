@@ -46,6 +46,7 @@ class Level:
         self.platforms = pygame.sprite.Group()
         self.main_sprite_group = pygame.sprite.Group()
         self.background_sprite_group = pygame.sprite.Group()
+        self.spike = pygame.sprite.Group()
         self.map = pytmx.load_pygame(f'{maps}/levels/tmx_{level}.tmx')
         self.width = self.map.width
         self.height = self.map.height
@@ -66,16 +67,18 @@ class Level:
                 for x in range(self.width):
                     id_map = self.map.get_tile_gid(x, y, layer)
                     if id_map != 0:
-                        id = self.map.tiledgidmap[self.map.get_tile_gid(x, y, layer)] - 1
-                        if id in borders:
-                            image = self.map.get_tile_image(x, y, layer)
-                            image = pygame.transform.scale(image, (64, 64))
+                        tile_id = self.map.tiledgidmap[self.map.get_tile_gid(x, y, layer)] - 1
+                        image = self.map.get_tile_image(x, y, layer)
+                        image = pygame.transform.scale(image, (64, 64))
+                        if tile_id in borders:
                             k = Border(x * self.tile_size, y * self.tile_size, self, image)
                             self.main_sprite_group.add(k)
                             self.platforms.add(k)
+                        elif tile_id == 76:
+                            k = Border(x * self.tile_size, y * self.tile_size, self, image)
+                            self.spike.add(k)
+                            self.main_sprite_group.add(k)
                         else:
-                            image = self.map.get_tile_image(x, y, layer)
-                            image = pygame.transform.scale(image, (64, 64))
                             k = BackGroundSprites(x * self.tile_size, y * self.tile_size, self, image)
                             self.background_sprite_group.add(k)
 
@@ -96,6 +99,7 @@ class Border(pygame.sprite.Sprite):
     def __init__(self, x, y, father, image):
         pygame.sprite.Sprite.__init__(self)
         self.rect = pygame.Rect(x, y, father.tile_size, 64)
+        self.mask = pygame.mask.from_surface(image)
         self.image = image
 
 

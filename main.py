@@ -218,7 +218,7 @@ class GameWindow:
                 current_window = 5
                 level_menu.unlock_level(int(self.level_num) + 1)
         self.level.render(self.player)
-        self.player.update(self.left, self.right, self.up, self.level.platforms)
+        self.player.update(self.left, self.right, self.up, self.level.platforms,self.level.spike)
 
     def update(self, pygame_event):
         if event.type == pygame.KEYDOWN and pygame.key.get_pressed()[pygame.K_ESCAPE]:
@@ -286,7 +286,7 @@ class AllLevelPassedWindow(NewLevelChooser, Menu):
 
     def __init__(self):
         super().__init__()
-        self.buttons = [Button('All Level passed', width // 2 - 320 + 10, height // 2 - 15 * 10, 40, False),
+        self.buttons = [Button('All Levels passed', width // 2 - 320 + 10, height // 2 - 15 * 10, 40, False),
                         Button('To menu', width // 2 - 115 + 10, height // 2 + 30, 20)]
 
 

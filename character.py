@@ -1,17 +1,12 @@
-import pygame
-import os
 import ctypes
-import imagetools
+import os
+
+import pygame
 
 user32 = ctypes.windll.user32  # get user monitor size
 screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
-# screensize = 900, 600
-size = width, height = screensize
-MAIN_WIDTH = width
-MAIN_HEIGHT = height
+width, height = screensize
 SPEED = 10
-COLOR_CHARACTER = 'black'
-
 JUMP = 16
 GRAVITY = 1
 pack = os.path.dirname(__file__)
@@ -21,7 +16,6 @@ image_folder = os.path.join(pack, 'Sprites')
 class Hero(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.l = False
         self.xspeed = 0
         self.yspeed = 7
         self.x_start = x
@@ -33,14 +27,13 @@ class Hero(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
 
-    def update(self, left, right, up, plat, spike):
+    def update(self, left: bool, right: bool, up: bool, plat: pygame.sprite.Group, spike: pygame.sprite.Group):
         if left:
             self.xspeed = -SPEED
         elif right:
             self.xspeed = SPEED
         else:
             self.xspeed = 0
-
         if up:
             if self.stay_ground:
                 self.yspeed = -JUMP

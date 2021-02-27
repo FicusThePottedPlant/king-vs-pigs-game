@@ -1,6 +1,4 @@
-from PIL import Image, ImageFilter
-import pygame
-import json
+from PIL import Image
 
 
 def del_transparent(file):

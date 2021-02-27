@@ -10,12 +10,14 @@ from mouse import *
 current_window = 0
 LEVELS = 10
 
-buttons_behaviour = {'Credits': lambda x: change_current_level_value(1), 'Return': lambda x: change_current_level_value(-2),
+buttons_behaviour = {'Credits': lambda x: change_current_level_value(1),
+                     'Return': lambda x: change_current_level_value(-2),
                      'Return to menu': lambda x: change_current_level_value(-1),
                      'Start game': lambda x: change_current_level_value(2),
                      'Return to main menu': lambda x: change_current_level_value(-4), 'Exit': lambda x: exit(),
                      'Tagir Asadullin': lambda x: webbrowser.open_new('t.me/ficusthepottedplant'),
-                     'Continue': lambda x: change_current_level_value(-1), 'Back to menu': lambda x: change_current_level_value(-5),
+                     'Continue': lambda x: change_current_level_value(-1),
+                     'Back to menu': lambda x: change_current_level_value(-5),
                      'New level': lambda x: to_new_level(x + 1), 'To menu': lambda x: change_current_level_value(-6)}
 
 left, right, up = False, False, False  # camera flags
@@ -99,21 +101,6 @@ class Menu:
                         Button('Credits', width // 2 - 98 + 10, height // 2 + 15 + 30, 30),
                         Button('Exit', width // 2 - 35 + 10, height // 2 + 10 + 30 * 3, 20)]
 
-        self.matrix = []
-        # generating Matrix effect
-        for i in range(0, height, 3):
-            for j in range(20):
-                self.falling_down(i)
-
-    def falling_down(self, y=-6):
-        """make a matrix main theme effect
-        :param y: y ords of the screen
-        """
-        return
-        text = self.font.render(string.printable[random.randint(0, 99)], True, 'gray')
-        text_x, text_y = random.randint(0, width), y
-        self.matrix.append((text, [text_x, text_y]))
-
     def update(self, pygame_event):
         """handle events"""
         for i in self.buttons:
@@ -121,13 +108,6 @@ class Menu:
 
     def render(self):
         """what to do on game cycle"""
-        for i in self.matrix:
-            screen.blit(*i)
-            i[1][1] += 3
-            if i[1][1] >= height + 3:
-                self.matrix.remove(i)
-        for i in range(20):
-            self.falling_down()
         for i in self.buttons:
             i.render()
         self.do_button_behaviour(pygame.mouse.get_pos())
@@ -148,11 +128,6 @@ class Credits(Menu):
                         Button('Tagir Asadullin', width // 2 - 202 + 10, height // 2 + 15 + 30 * 3, 30),
                         Button('Return to menu', width // 2 - 135 + 10, height // 2 + 10 + 30 * 9, 20)]
 
-    def render(self):
-        """what to do on game cycle"""
-        self.matrix = menu.matrix
-        super().render()
-
 
 class LevelChooser(Menu):
     """level chooser window"""
@@ -172,7 +147,6 @@ class LevelChooser(Menu):
 
     def render(self):
         """what to do on game cycle"""
-        self.matrix = menu.matrix
         super().render()
         pygame.draw.rect(screen, 'black', (50, 50,
                                            width - 100, height - 100), width=0, border_radius=10)
@@ -186,7 +160,7 @@ class LevelChooser(Menu):
         """unlock level by request"""
         level_menu.cur.execute(f"UPDATE config SET status = 0 WHERE level = {n}")
         level_menu.buttons[n + 1].unlock_button()
-        # level_menu.con.commit()
+        # level_menu.con.commit() TODO UNCOMMENT THIS АХТУНГ ВНИМАНИЕ
 
 
 class GameWindow:
@@ -218,7 +192,7 @@ class GameWindow:
                 current_window = 5
                 level_menu.unlock_level(int(self.level_num) + 1)
         self.level.render(self.player)
-        self.player.update(self.left, self.right, self.up, self.level.platforms,self.level.spike)
+        self.player.update(self.left, self.right, self.up, self.level.platforms, self.level.spike)
 
     def update(self, pygame_event):
         if event.type == pygame.KEYDOWN and pygame.key.get_pressed()[pygame.K_ESCAPE]:
@@ -239,7 +213,6 @@ class Pause(Menu):
 
     def render(self):
         """what to do on game cycle"""
-        self.matrix = menu.matrix
         super().render()
         pygame.draw.rect(screen, 'black', (100, 100,
                                            width - 200, height - 200), border_radius=10)
@@ -291,7 +264,7 @@ class AllLevelPassedWindow(NewLevelChooser, Menu):
 
 
 def change_current_level_value(v):
-    global current_window, game
+    global current_window
     current_window += v
 
 

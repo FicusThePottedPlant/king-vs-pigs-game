@@ -6,7 +6,6 @@ import pytmx
 
 user32 = ctypes.windll.user32  # get user monitor size
 screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
-size = WIDTH, HEIGHT = screensize[0] - 100, screensize[1] - 400
 screen = pygame.display.set_mode(screensize)
 self_path = os.path.dirname(__file__)
 maps = os.path.join(self_path, 'data')
@@ -15,11 +14,6 @@ borders = [5, 8, *range(12, 23), *range(32, 44), *range(50, 55), 64, 67, 68, *ra
            *range(108, 122),
            131, 132, 152, 153, 161, 162,
            *range(168, 171), *range(196, 202), *range(228, 235), *range(256, 260), *range(288, 292), *range(320, 324)]
-WIDTH_CHARACTER = 34
-HEIGHT_CHARACTER = 28
-level_width = 16 * 64
-level_height = 16 * 64
-h = pygame.Surface((64, 64))
 
 
 class Camera:
@@ -37,7 +31,7 @@ class Camera:
 def camera_configure(camera, target_rect):
     l, t, _, _ = target_rect
     _, _, w, h = camera
-    l, t = -l + WIDTH / 2, -t + HEIGHT * 1.00000
+    l, t = -l + (screensize[0] - 100) / 2, -t + (screensize[1] - 400)
     return pygame.Rect(l, t, w, h)
 
 

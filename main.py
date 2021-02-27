@@ -7,23 +7,16 @@ from character import *
 from level_create import *
 from mouse import *
 
-current_window = 3
+current_window = 0
 LEVELS = 10
 
-
-def inc_number(v):
-    global current_window
-    current_window += v
-    if v == -4:
-        game.player.rect.x = 1000000
-
-
-buttons_behaviour = {'Credits': lambda x: inc_number(1), 'Return': lambda x: inc_number(-2),
-                     'Return to menu': lambda x: inc_number(-1),
-                     'Start game': lambda x: inc_number(2),
-                     'Return to main menu': lambda x: inc_number(-4), 'Exit': lambda x: exit(),
+buttons_behaviour = {'Credits': lambda x: change_current_level_value(1), 'Return': lambda x: change_current_level_value(-2),
+                     'Return to menu': lambda x: change_current_level_value(-1),
+                     'Start game': lambda x: change_current_level_value(2),
+                     'Return to main menu': lambda x: change_current_level_value(-4), 'Exit': lambda x: exit(),
                      'Tagir Asadullin': lambda x: webbrowser.open_new('t.me/ficusthepottedplant'),
-                     'Continue': lambda x: inc_number(-1)}
+                     'Continue': lambda x: change_current_level_value(-1), 'Back to menu': lambda x: change_current_level_value(-5),
+                     'New level': lambda x: to_new_level(x + 1), 'To menu': lambda x: change_current_level_value(-6)}
 
 left, right, up = False, False, False  # camera flags
 
@@ -47,6 +40,7 @@ class Button:
         self.text = self.font.render(button_text, True, self.color)
         self.text_x, self.text_y = x, y
         self.text_w, self.text_h = self.text.get_width(), self.text.get_height()
+        # print(self.text_x, self.text_y, self.text_w, self.text_h)
         self.rect = self.text.get_rect()
         self.center_x, self.center_y = (2 * self.text_x + self.text_w) / 2, (2 * self.text_y + self.text_h) / 2
 
@@ -84,6 +78,8 @@ class Button:
                     current_window = 3
                     game = GameWindow(self.button_text)
                     data[3] = game
+                elif self.button_text == 'New level':
+                    buttons_behaviour[self.button_text](int(game.level_num))
                 else:
                     buttons_behaviour[self.button_text](None)
 
@@ -110,11 +106,11 @@ class Menu:
                 self.falling_down(i)
 
     def falling_down(self, y=-6):
-        return
         """make a matrix main theme effect
         :param y: y ords of the screen
         """
-        text = self.font.render(string.printable[random.randint(0, 99)], True, 'green')
+        return
+        text = self.font.render(string.printable[random.randint(0, 99)], True, 'gray')
         text_x, text_y = random.randint(0, width), y
         self.matrix.append((text, [text_x, text_y]))
 
@@ -186,14 +182,23 @@ class LevelChooser(Menu):
             i.render()
         self.do_button_behaviour(pygame.mouse.get_pos())
 
+    def unlock_level(self, n):
+        """unlock level by request"""
+        level_menu.cur.execute(f"UPDATE config SET status = 0 WHERE level = {n}")
+        level_menu.buttons[n + 1].unlock_button()
+        # level_menu.con.commit()
+
 
 class GameWindow:
-    def __init__(self, which_level):
+    def __init__(self, level_c):
         global left, right, up
-        self.which_level = which_level
-        self.player = Hero((164, 1200))
-        main_sprite_group.add(self.player)
-        self.level = Level(which_level)
+        self.level_num = level_c
+        self.level = Level(level_c)
+        f = open(f'data/levels/cfg_{level_c}.txt')
+        self.start = f.readline().split()
+        self.end = f.readline().split()
+        self.player = Hero(int(self.start[0]), int(self.start[1]))
+        self.level.main_sprite_group.add(self.player)
         self.level.create_playable_map()
         self.left, self.right, self.up = False, False, False
 
@@ -205,8 +210,15 @@ class GameWindow:
             self.right = True
         if pygame.key.get_pressed()[pygame.K_z]:
             self.up = True
+        if (self.player.rect.x - int(self.end[0])) ** 2 + (self.player.rect.y - int(self.end[1])) ** 2 <= 60 ** 2:
+            global current_window
+            if int(self.level_num) == 2:
+                current_window = 6
+            else:
+                current_window = 5
+                level_menu.unlock_level(int(self.level_num) + 1)
         self.level.render(self.player)
-        self.player.update(self.left, self.right, self.up, platforms)
+        self.player.update(self.left, self.right, self.up, self.level.platforms)
 
     def update(self, pygame_event):
         if event.type == pygame.KEYDOWN and pygame.key.get_pressed()[pygame.K_ESCAPE]:
@@ -249,6 +261,49 @@ class Pause(Menu):
             i.update(pygame_event)
 
 
+class NewLevelChooser(Menu):
+    """After level have been passed this window appears and give the player choose. Quit or the next level"""
+
+    def __init__(self):
+        super().__init__()
+        self.buttons = [Button('Level passed', width // 2 - 230 + 10, height // 2 - 15 * 10, 40, False),
+                        Button('New level', width // 2 - 90 + 10, height // 2 - 30, 20),
+                        Button('Back to menu', width // 2 - 115 + 10, height // 2 + 30, 20)]
+
+    def render(self):
+        super().render()
+        pygame.draw.rect(screen, 'black', (300, 300,
+                                           width - 600, height - 600), border_radius=10)
+        pygame.draw.rect(screen, 'white', (300, 300,
+                                           width - 600, height - 600), width=5, border_radius=10)
+        for i in self.buttons:
+            i.render()
+        super().do_button_behaviour(pygame.mouse.get_pos())
+
+
+class AllLevelPassedWindow(NewLevelChooser, Menu):
+    """After all level have been passed this window appears and give the player quit button"""
+
+    def __init__(self):
+        super().__init__()
+        self.buttons = [Button('All Level passed', width // 2 - 320 + 10, height // 2 - 15 * 10, 40, False),
+                        Button('To menu', width // 2 - 115 + 10, height // 2 + 30, 20)]
+
+
+def change_current_level_value(v):
+    global current_window, game
+    current_window += v
+
+
+def to_new_level(n):
+    """algorithm to change the level """
+    global game, current_window
+    game = GameWindow(n)
+    data[3] = game
+    level_menu.unlock_level(n)
+    current_window = 3
+
+
 if __name__ == '__main__':
     pygame.init()
     fps = 30
@@ -259,11 +314,15 @@ if __name__ == '__main__':
     titres = Credits()
     level_menu = LevelChooser()
     pause = Pause()
+    new_level = NewLevelChooser()
     pygame.mouse.set_visible(False)
     mouse = Mouse(all_sprites)
-    game = GameWindow(3)
-    data = {0: menu, 1: titres, 2: level_menu, 3: game, 4: pause}
+    error = AllLevelPassedWindow()
+    game = None
+    data = {0: menu, 1: titres, 2: level_menu, 3: game, 4: pause, 5: new_level, 6: error}
+
     while running:
+
         screen.fill('#1d212d')
         mouse.display = False if current_window == 3 else True
         for event in pygame.event.get():
@@ -274,6 +333,5 @@ if __name__ == '__main__':
 
         data[current_window].render()
         all_sprites.draw(screen)
-
         pygame.display.flip()
         clock.tick(fps)

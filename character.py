@@ -19,20 +19,17 @@ image_folder = os.path.join(pack, 'Sprites')
 
 
 class Hero(pygame.sprite.Sprite):
-    def __init__(self, pos):
+    def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.l = False
         self.xspeed = 0
         self.yspeed = 7
-        self.x_start = pos[0]
-        self.y_start = pos[1]
+        self.x_start = x
+        self.y_start = y
         self.stay_ground = False
-        w, h = imagetools.del_transparent(f'{image_folder}/03-Pig/Fall (34x28).png')
         self.image = pygame.image.load(f'{image_folder}/03-Pig/Fall (34x28).png').convert()
-        self.image = pygame.transform.scale(self.image, (w * 2, h * 2))
-        self.mask = pygame.mask.from_surface(self.image)
-        r = self.image.get_rect()
-        self.rect = pygame.Rect(pos[0], pos[1], r.width, r.height)
+        self.image = pygame.transform.scale(self.image, (self.image.get_width() * 2, self.image.get_height() * 2))
+        self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
 
     def update(self, left, right, up, plat):
         if left:

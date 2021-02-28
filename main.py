@@ -1,6 +1,4 @@
-import random
 import sqlite3
-import string
 import webbrowser
 
 from character import *
@@ -8,7 +6,7 @@ from level_create import *
 from mouse import *
 
 current_window = 0
-LEVELS = 10
+LEVELS = 2
 
 buttons_behaviour = {'Credits': lambda x: change_current_level_value(1),
                      'Return': lambda x: change_current_level_value(-2),
@@ -42,7 +40,6 @@ class Button:
         self.text = self.font.render(button_text, True, self.color)
         self.text_x, self.text_y = x, y
         self.text_w, self.text_h = self.text.get_width(), self.text.get_height()
-        # print(self.text_x, self.text_y, self.text_w, self.text_h)
         self.rect = self.text.get_rect()
         self.center_x, self.center_y = (2 * self.text_x + self.text_w) / 2, (2 * self.text_y + self.text_h) / 2
 
@@ -148,10 +145,10 @@ class LevelChooser(Menu):
     def render(self):
         """what to do on game cycle"""
         super().render()
-        pygame.draw.rect(screen, 'black', (50, 50,
-                                           width - 100, height - 100), width=0, border_radius=10)
-        pygame.draw.rect(screen, 'white', (50, 50,
-                                           width - 100, height - 100), width=5, border_radius=10)
+        pygame.draw.rect(screen, '#1d212d', (100, 100,
+                                             width - 200, height - 200), width=0, border_radius=10)
+        pygame.draw.rect(screen, 'white', (100, 100,
+                                           width - 200, height - 200), width=5, border_radius=10)
         for i in self.buttons:
             i.render()
         self.do_button_behaviour(pygame.mouse.get_pos())
@@ -160,7 +157,7 @@ class LevelChooser(Menu):
         """unlock level by request"""
         level_menu.cur.execute(f"UPDATE config SET status = 0 WHERE level = {n}")
         level_menu.buttons[n + 1].unlock_button()
-        # level_menu.con.commit() TODO UNCOMMENT THIS АХТУНГ ВНИМАНИЕ
+        # level_menu.con.commit() TODO UNCOMMENT THIS АХТУНГ ВНИМАНИЕ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 class GameWindow:
@@ -184,9 +181,10 @@ class GameWindow:
             self.right = True
         if pygame.key.get_pressed()[pygame.K_z]:
             self.up = True
+        # if player in destination radius execute this
         if (self.player.rect.x - int(self.end[0])) ** 2 + (self.player.rect.y - int(self.end[1])) ** 2 <= 60 ** 2:
             global current_window
-            if int(self.level_num) == 2:
+            if int(self.level_num) == 2:  # if all levels have been passed show AllLevelPassedWindow
                 current_window = 6
             else:
                 current_window = 5
@@ -194,7 +192,7 @@ class GameWindow:
         self.level.render(self.player)
         self.player.update(self.left, self.right, self.up, self.level.platforms, self.level.spike)
 
-    def update(self, pygame_event):
+    def update(self, _):
         if event.type == pygame.KEYDOWN and pygame.key.get_pressed()[pygame.K_ESCAPE]:
             global current_window
             current_window = 4
@@ -214,8 +212,8 @@ class Pause(Menu):
     def render(self):
         """what to do on game cycle"""
         super().render()
-        pygame.draw.rect(screen, 'black', (100, 100,
-                                           width - 200, height - 200), border_radius=10)
+        pygame.draw.rect(screen, '#1d212d', (100, 100,
+                                             width - 200, height - 200), border_radius=10)
         pygame.draw.rect(screen, 'white', (100, 100,
                                            width - 200, height - 200), width=5, border_radius=10)
         for i in self.buttons:
@@ -245,8 +243,8 @@ class NewLevelChooser(Menu):
 
     def render(self):
         super().render()
-        pygame.draw.rect(screen, 'black', (300, 300,
-                                           width - 600, height - 600), border_radius=10)
+        pygame.draw.rect(screen, '#1d212d', (300, 300,
+                                             width - 600, height - 600), border_radius=10)
         pygame.draw.rect(screen, 'white', (300, 300,
                                            width - 600, height - 600), width=5, border_radius=10)
         for i in self.buttons:
@@ -293,9 +291,7 @@ if __name__ == '__main__':
     error = AllLevelPassedWindow()
     game = None
     data = {0: menu, 1: titres, 2: level_menu, 3: game, 4: pause, 5: new_level, 6: error}
-
     while running:
-
         screen.fill('#1d212d')
         mouse.display = False if current_window == 3 else True
         for event in pygame.event.get():

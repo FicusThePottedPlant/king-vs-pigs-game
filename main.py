@@ -19,8 +19,6 @@ buttons_behaviour = {'1': lambda x: change_current_level_value(5), 'Credits': la
                      'New level': lambda x: to_new_level(x + 1), 'To menu': lambda x: change_current_level_value(-6),
                      'OK': lambda x: to_new_level(1)}
 
-left, right, up = False, False, False  # camera flags
-
 
 class Button:
     def __init__(self, button_text: str, x, y, font_size, is_clickable=True, has_border=False,

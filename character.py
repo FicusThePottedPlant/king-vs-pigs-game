@@ -1,6 +1,6 @@
 import ctypes
-import os
 from itertools import cycle
+
 import pygame
 
 user32 = ctypes.windll.user32  # get user monitor size
@@ -42,7 +42,6 @@ class Hero(pygame.sprite.Sprite):
                 self.image = self.run_list[5]
             elif right and self.stay_ground:
                 self.image = next(self.run)
-
         else:
             self.xspeed = 0
             self.image = self.jump_list[1]

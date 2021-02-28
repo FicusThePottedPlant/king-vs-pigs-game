@@ -8,7 +8,7 @@ from mouse import *
 current_window = 0
 LEVELS = 2
 
-buttons_behaviour = {'Credits': lambda x: change_current_level_value(1),
+buttons_behaviour = {'1': lambda x: change_current_level_value(5), 'Credits': lambda x: change_current_level_value(1),
                      'Return': lambda x: change_current_level_value(-2),
                      'Return to menu': lambda x: change_current_level_value(-1),
                      'Start game': lambda x: change_current_level_value(2),
@@ -16,7 +16,8 @@ buttons_behaviour = {'Credits': lambda x: change_current_level_value(1),
                      'Tagir Asadullin': lambda x: webbrowser.open_new('t.me/ficusthepottedplant'),
                      'Continue': lambda x: change_current_level_value(-1),
                      'Back to menu': lambda x: change_current_level_value(-5),
-                     'New level': lambda x: to_new_level(x + 1), 'To menu': lambda x: change_current_level_value(-6)}
+                     'New level': lambda x: to_new_level(x + 1), 'To menu': lambda x: change_current_level_value(-6),
+                     'OK': lambda x: to_new_level(1)}
 
 left, right, up = False, False, False  # camera flags
 
@@ -73,7 +74,7 @@ class Button:
                 self.text_y <= mouse_pos[1] <= self.text_y + self.text_h and self.is_clickable and not self.is_locked:
             if pygame_event.type == pygame.MOUSEBUTTONDOWN:
                 global current_window, buttons_behaviour, game
-                if self.button_text.isnumeric():
+                if self.button_text.isnumeric() and self.button_text != '1':
                     current_window = 3
                     game = GameWindow(self.button_text)
                     data[3] = game
@@ -157,7 +158,7 @@ class LevelChooser(Menu):
         """unlock level by request"""
         level_menu.cur.execute(f"UPDATE config SET status = 0 WHERE level = {n}")
         level_menu.buttons[n + 1].unlock_button()
-        # level_menu.con.commit() TODO UNCOMMENT THIS АХТУНГ ВНИМАНИЕ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        level_menu.con.commit()
 
 
 class GameWindow:
@@ -243,10 +244,10 @@ class NewLevelChooser(Menu):
 
     def render(self):
         super().render()
-        pygame.draw.rect(screen, '#1d212d', (300, 300,
-                                             width - 600, height - 600), border_radius=10)
-        pygame.draw.rect(screen, 'white', (300, 300,
-                                           width - 600, height - 600), width=5, border_radius=10)
+        pygame.draw.rect(screen, '#1d212d', (200, 200,
+                                             width - 200 * 2, height - 200 * 2), border_radius=10)
+        pygame.draw.rect(screen, 'white', (200, 200,
+                                           width - 200 * 2, height - 200 * 2), width=5, border_radius=10)
         for i in self.buttons:
             i.render()
         super().do_button_behaviour(pygame.mouse.get_pos())
@@ -259,6 +260,16 @@ class AllLevelPassedWindow(NewLevelChooser, Menu):
         super().__init__()
         self.buttons = [Button('All Levels passed', width // 2 - 320 + 10, height // 2 - 15 * 10, 40, False),
                         Button('To menu', width // 2 - 115 + 10, height // 2 + 30, 20)]
+
+
+class Tutorial(NewLevelChooser, Menu):
+    """Tutorial window"""
+
+    def __init__(self):
+        super().__init__()
+        self.buttons = [Button(' press Z to jump', width // 2 - 390 + 100, height // 2 - 140, 40, False),
+                        Button('Left and right to move', width // 2 - 400 + 10, height // 2 - 60, 40, False),
+                        Button('OK', width // 2 - 20 + 10, height // 2 + 50, 20)]
 
 
 def change_current_level_value(v):
@@ -289,8 +300,9 @@ if __name__ == '__main__':
     pygame.mouse.set_visible(False)
     mouse = Mouse(all_sprites)
     error = AllLevelPassedWindow()
+    tutor = Tutorial()
     game = None
-    data = {0: menu, 1: titres, 2: level_menu, 3: game, 4: pause, 5: new_level, 6: error}
+    data = {0: menu, 1: titres, 2: level_menu, 3: game, 4: pause, 5: new_level, 6: error, 7: tutor}
     while running:
         screen.fill('#1d212d')
         mouse.display = False if current_window == 3 else True

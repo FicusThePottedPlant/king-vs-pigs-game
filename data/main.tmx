@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.4" tiledversion="1.4.3" orientation="orthogonal" renderorder="right-down" width="32" height="18" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="1">
  <tileset firstgid="1" source="main.tsx"/>
+ <tileset firstgid="257" source="industrial.v2.tsx"/>
  <layer id="1" name="Слой тайлов 1" width="32" height="18">
   <data encoding="base64" compression="zlib">
-   eJxjZ2BgYKcj5kBjEwLsRKihFsBlF73cQE+/YrMbGQ8kIMZ+eruzFg0TA6jpRmzxQ6v4omW4UtvsWgbSwgCbOnLchC+/0CL8SDFzoPMvNkBpHFFiJzF2k2onej4kxS2jAAHo2fbAhgESIQV9
+   eJxjZ2BgYKcj5kBjEwLsRKihFsBlF73cQE+/YrMbGQ8kIMZ+eruzFg0TA6jpRmzxQ6v4omW4UtvsWgbSwgCbOnLchC+/0CL8SDFzoPMvNkBpHFFiJzF2k2onej4kxS3EgNVMDAxrmEh0FBXBaaDdZ+hgPz3bHtgwAGjGCHM=
   </data>
  </layer>
 </map>

@@ -15,6 +15,7 @@ maps = os.path.join(self_path, 'data')
 borders = [5, 8, *range(12, 23), *range(32, 44), *range(50, 55), 64, 67, 68, *range(77, 89), 99, 100, *range(108, 122),
            131, 132, 152, 153, 161, 162,
            *range(168, 171), *range(196, 202), *range(228, 235), *range(256, 260), *range(288, 292), *range(320, 324)]
+final = [425, 426, 458, 459]
 platforms = pygame.sprite.Group()
 main_sprite_group = pygame.sprite.Group()
 background_sprite_group = pygame.sprite.Group()
@@ -63,12 +64,21 @@ class Level:
 
     def render(self, player):
         self.camera.update(player)
+        for i in self.hp:
+            screen.blit(i.image, (i.x, i.y))
         for s in background_sprite_group:
             screen.blit(s.image, self.camera.apply(s))
         for s in main_sprite_group:
             screen.blit(s.image, self.camera.apply(s))
 
     def create_playable_map(self):
+        self.hp = []
+        x = 50
+        y = 10
+        for i in range(3):
+            a = HP(x, y)
+            x += 20
+            self.hp.append(a)
         for layer in range(self.layer_count):
             for y in range(self.height):
                 for x in range(self.width):
@@ -82,6 +92,12 @@ class Level:
                             k = Border(x * self.tile_size, y * self.tile_size, self, image)
                             main_sprite_group.add(k)
                             platforms.add(k)
+                        elif id in final:
+                            image = self.map.get_tile_image(x, y, layer)
+                            image = pygame.transform.scale(image, (64, 64))
+                            k = Final_Blolck(x * self.tile_size, y * self.tile_size, image)
+                            main_sprite_group.add(k)
+                            platforms.add(k)
                         else:
                             image = self.map.get_tile_image(x, y, layer)
                             image = pygame.transform.scale(image, (64, 64))
@@ -89,22 +105,42 @@ class Level:
                             background_sprite_group.add(k)
 
 
-class Door(pygame.sprite.Sprite):
-    def __init__(self):
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        pass
+        self.image = pygame.image.load(f'{maps}/tiles/0_352.png')
+        self.r = self.image.get_rect()
+        self.rect = pygame.Rect(x, y, self.r.w, self.r.h)
+        self.mask = pygame.mask.from_surface(self.image)
 
 
-class Platform(pygame.sprite.Sprite):
-    def __init__(self, x, y, id):
+class Projectile(pygame.sprite.Sprite):
+    def __init__(self, x, y, xseep, yspeed):
         pygame.sprite.Sprite.__init__(self)
-        self.type = 'Platform'
-        if id == 247 + 16:
-            height = 12 * 2
-        else:
-            height = 6 * 2
-        width = 256
-        self.rect = pygame.Rect(x, y, width, height)
+        self.xspeed = xseep
+        self.yspeed = yspeed
+        self.image = pygame.image.load(f'{maps}/tiles/176_256.png')
+        self.r = self.image.get_rect()
+        self.rect = pygame.Rect(x, y, self.r.w, self.r.h)
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def update(self):
+        self.rect.x += self.xspeed
+        self.rect.y += self.yspeed
+
+
+class HP(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.x, self.y = x, y
+        self.image_full = pygame.image.load(f'{maps}/tiles/144_256.png')
+        self.image_void = pygame.image.load(f'{maps}/tiles/160_256.png')
+        self.image = self.image_full
+        self.mask = pygame.mask.from_surface(self.image_full)
+        self.i = 0
+
+    def void(self):
+        self.mask = pygame.mask.from_surface(self.image_void)
 
 
 class Border(pygame.sprite.Sprite):
@@ -113,7 +149,6 @@ class Border(pygame.sprite.Sprite):
         self.type = ''
         self.image = image
         self.r = self.image.get_rect()
-        print(self.r.w, self.r.h)
         self.rect = pygame.Rect(x, y, self.r.w, self.r.h)
         self.mask = pygame.mask.from_surface(self.image)
 
@@ -121,5 +156,16 @@ class Border(pygame.sprite.Sprite):
 class BackGround_sprites(pygame.sprite.Sprite):
     def __init__(self, x, y, father, image):
         pygame.sprite.Sprite.__init__(self)
+        self.type = ''
         self.rect = pygame.Rect(x, y, father.tile_size, father.tile_size)
         self.image = image
+
+
+class Final_Blolck(Border):
+    def __init__(self, x, y, image):
+        pygame.sprite.Sprite.__init__(self)
+        self.type = 'Final'
+        self.image = image
+        self.r = self.image.get_rect()
+        self.rect = pygame.Rect(x, y, self.r.w, self.r.h)
+        self.mask = pygame.mask.from_surface(self.image)

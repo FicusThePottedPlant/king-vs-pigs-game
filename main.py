@@ -7,7 +7,7 @@ from character import *
 from level_create import *
 from mouse import *
 
-current_window = 3
+current_window = 0
 LEVELS = 10
 
 
@@ -23,7 +23,8 @@ buttons_behaviour = {'Credits': lambda x: inc_number(1), 'Return': lambda x: inc
                      'Start game': lambda x: inc_number(2),
                      'Return to main menu': lambda x: inc_number(-4), 'Exit': lambda x: exit(),
                      'Tagir Asadullin': lambda x: webbrowser.open_new('t.me/ficusthepottedplant'),
-                     'Continue': lambda x: inc_number(-1)}
+                     'Continue': lambda x: inc_number(-1),
+                     'Next Level': lambda x: inc_number(-3)}
 
 left, right, up = False, False, False  # camera flags
 
@@ -191,7 +192,7 @@ class GameWindow:
     def __init__(self, which_level):
         global left, right, up
         self.which_level = which_level
-        self.player = Hero((164, 1200))
+        self.player = Char((100, 100))
         main_sprite_group.add(self.player)
         self.level = Level(which_level)
         self.level.create_playable_map()
@@ -203,7 +204,7 @@ class GameWindow:
             self.left = True
         if pygame.key.get_pressed()[pygame.K_RIGHT]:
             self.right = True
-        if pygame.key.get_pressed()[pygame.K_z]:
+        if pygame.key.get_pressed()[pygame.K_UP]:
             self.up = True
         self.level.render(self.player)
         self.player.update(self.left, self.right, self.up, platforms)
@@ -249,6 +250,33 @@ class Pause(Menu):
             i.update(pygame_event)
 
 
+class Final(Menu):
+    def __init__(self):
+        super().__init__()
+        self.font = pygame.font.Font('data/fonts/8-BIT WONDER.TTF', 6)
+        self.buttons = [Button('Next Level', width // 2, height // 2 - 30, 20)]
+
+    def render(self):
+        pygame.draw.rect(screen, 'white', (100, 100,
+                                           width - 200, height - 200), width=5, border_radius=10)
+        text = self.font.render('Congrutulation, you reach next level', True, (20, 100, 20))
+        screen.blit(text, (width // 3, height // 3))
+        for i in self.buttons:
+            i.render()
+        self.do_button_behaviour(pygame.mouse.get_pos())
+
+    def do_button_behaviour(self, pos):
+        super(Final, self).do_button_behaviour(pygame.mouse.get_pos())
+
+    def update(self, pygame_event):
+        if pygame_event.type == pygame.KEYDOWN and pygame.key.get_pressed()[pygame.K_ESCAPE]:
+            global current_window
+            current_window = 2
+
+        for i in self.buttons:
+            i.update(pygame_event)
+
+
 if __name__ == '__main__':
     pygame.init()
     fps = 30
@@ -262,7 +290,8 @@ if __name__ == '__main__':
     pygame.mouse.set_visible(False)
     mouse = Mouse(all_sprites)
     game = GameWindow(3)
-    data = {0: menu, 1: titres, 2: level_menu, 3: game, 4: pause}
+    final = Final()
+    data = {0: menu, 1: titres, 2: level_menu, 3: game, 4: pause, 5: final}
     while running:
         screen.fill('#1d212d')
         mouse.display = False if current_window == 3 else True
@@ -271,6 +300,16 @@ if __name__ == '__main__':
                 running = False
             data[current_window].update(event)
             all_sprites.update(event)
+        if current_window == 3:
+            if game.player.l:
+                current_window = 5
+                game = GameWindow(3)
+                for i in main_sprite_group:
+                    main_sprite_group.remove(i)
+                for i in platforms:
+                    platforms.remove(i)
+                for i in background_sprite_group:
+                    background_sprite_group.remove(i)
 
         data[current_window].render()
         all_sprites.draw(screen)

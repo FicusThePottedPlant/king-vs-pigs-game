@@ -10,7 +10,6 @@ MAIN_WIDTH = width
 MAIN_HEIGHT = height
 SPEED = 7
 COLOR_CHARACTER = 'black'
-
 WIDTH_CHARACTER = 15
 HEIGHT_CHARACTER = 20
 JUMP = 8.5
@@ -32,6 +31,7 @@ class Char(pygame.sprite.Sprite):
         self.image.fill(pygame.Color(COLOR_CHARACTER))
         self.image = pygame.image.load(f'{image_folder}/tiles/0_256.png').convert()
         self.image.set_colorkey(pygame.Color(COLOR_CHARACTER))
+        self.mask = pygame.mask.from_surface(self.image)
         self.r = self.image.get_rect()
         self.rect = pygame.Rect(pos[0], pos[1], self.r.width, self.r.height)
 
@@ -55,7 +55,10 @@ class Char(pygame.sprite.Sprite):
 
     def collision(self, xspeed, yspeed, plat):
         for p in plat:
-            if pygame.sprite.collide_mask(self, p):
+            if pygame.sprite.collide_rect(self, p):
+                if p.type == 'Final':
+                    self.l = True
+                    continue
                 if xspeed > 0:
                     self.rect.right = p.rect.left
                 elif xspeed < 0:

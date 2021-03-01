@@ -6,7 +6,7 @@ from level_create import *
 from mouse import *
 
 current_window = 0
-LEVELS = 2
+LEVELS = 4
 
 buttons_behaviour = {'1': lambda x: change_current_level_value(5), 'Credits': lambda x: change_current_level_value(1),
                      'Return': lambda x: change_current_level_value(-2),
@@ -183,7 +183,7 @@ class GameWindow:
         # if player in destination radius execute this
         if (self.player.rect.x - int(self.end[0])) ** 2 + (self.player.rect.y - int(self.end[1])) ** 2 <= 60 ** 2:
             global current_window
-            if int(self.level_num) == 2:  # if all levels have been passed show AllLevelPassedWindow
+            if int(self.level_num) == 3:  # if all levels have been passed show AllLevelPassedWindow
                 current_window = 6
             else:
                 current_window = 5
@@ -265,7 +265,7 @@ class Tutorial(NewLevelChooser, Menu):
 
     def __init__(self):
         super().__init__()
-        self.buttons = [Button(' press Z to jump', width // 2 - 390 + 100, height // 2 - 140, 40, False),
+        self.buttons = [Button('press Z to jump', width // 2 - 390 + 100, height // 2 - 140, 40, False),
                         Button('Left and right to move', width // 2 - 400 + 10, height // 2 - 60, 40, False),
                         Button('OK', width // 2 - 20 + 10, height // 2 + 50, 20)]
 

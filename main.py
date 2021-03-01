@@ -183,7 +183,7 @@ class GameWindow:
         # if player in destination radius execute this
         if (self.player.rect.x - int(self.end[0])) ** 2 + (self.player.rect.y - int(self.end[1])) ** 2 <= 60 ** 2:
             global current_window
-            if int(self.level_num) == 3:  # if all levels have been passed show AllLevelPassedWindow
+            if int(self.level_num) == LEVELS:  # if all levels have been passed show AllLevelPassedWindow
                 current_window = 6
             else:
                 current_window = 5
